@@ -64,7 +64,7 @@ function makeid(length) {
   return result;
 }
 
-const maxSize = 1000
+const maxSize = 3000
 // Use as Buffer
 var circularBuffer = new adt_1.CircularQueue({
   maxSize: maxSize,
@@ -73,14 +73,23 @@ var circularBuffer = new adt_1.CircularQueue({
 
 let pushCount = 0
 const isHalfSeen = () => ((pushCount++) % maxSize) > maxSize / 2
-const refreshTopK = (keyword) => {
+const purgeOld = () => {
   const front = circularBuffer.front()
   if (front && front.when < new Date().getTime() - 2592000000 /*month*/) {
     circularBuffer.pop()
+    purgeOld()
+  } else {
+    return
   }
+}
+const refreshTopK = (keyword) => {
+  purgeOld()
   circularBuffer.push([new Date().getTime(), keyword])
   if (isHalfSeen()) {
     console.log(('isHalfSeenisHalfSeenisHalfSeenisHalfSeenisHalfSeenisHalfSeens'))
+    for (let item of topk.values()) {
+      console.log(`Item "${item.value}" is in position ${item.rank} with an estimated frequency of ${item.frequency}`)
+    }
     pushCount = 0
     topk = new TopK(10, 0.001, 0.99)
     circularBuffer.forEach((elem, index, arr) => {
@@ -89,7 +98,7 @@ const refreshTopK = (keyword) => {
   }
 }
 
-for (let index = 0; index < 1000; index++) {
+for (let index = 0; index < 10000; index++) {
   refreshTopK(makeid(5))
 }
 
