@@ -2,6 +2,14 @@ const { TopK } = require('bloom-filters')
 const fs = require('fs')
 const path = require('path')
 const _ = require('underscore')
+const FuzzySet = require('fuzzyset')
+
+
+// fuzzyset = FuzzySet(['Mississippi', 'Missouri', 'California'], false, 3, 3)
+// let similarity = fuzzyset.get('mossisippi')
+// console.log(similarity)
+// similarity = fuzzyset.get('jesus')
+// console.log(similarity === null)
 
 const taxonomyPathEn = './example-data.txt'
 const fileSyncEn = fs.readFileSync(path.join(__dirname, taxonomyPathEn)).toString()
@@ -82,8 +90,21 @@ const purgeOld = () => {
     return
   }
 }
+let fuzzyset = FuzzySet()
+const checkSimilarity = (keyword) => {
+  const similar = fuzzyset.get(keyword)
+  if (!similar || (similar[0][0] < 0.8)) {
+    fuzzyset.add(keyword)
+    return false
+  } else {
+    return similar[0][1]
+  }
+}
 const refreshTopK = (keyword) => {
   purgeOld()
+  const similar = checkSimilarity(keyword)
+  if (similar)
+    keyword = similar
   circularBuffer.push([new Date().getTime(), keyword])
   if (isHalfSeen()) {
     console.log(('isHalfSeenisHalfSeenisHalfSeenisHalfSeenisHalfSeenisHalfSeens'))
@@ -93,6 +114,7 @@ const refreshTopK = (keyword) => {
     pushCount = 0
     topk = new TopK(10, 0.001, 0.99)
     circularBuffer.forEach((elem, index, arr) => {
+
       topk.add(elem[1])
     })
   }
