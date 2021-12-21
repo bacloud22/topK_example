@@ -13,6 +13,7 @@
     "@toreda/adt": "^0.4.0",
     "bloom-filters": "^1.3.9",
     "fuzzyset": "^1.0.6",
+    "mongodb": "^4.2.2",
     "underscore": "^1.13.1"
   }
 }
